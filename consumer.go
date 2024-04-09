@@ -185,7 +185,8 @@ func (c *Consumer) ScanShard(ctx context.Context, shardID string, fn ScanFunc) e
 
 			// deaggregate records
 			if c.isAggregated {
-				records, err = deaggregateRecords(resp.Records)
+				//records, err = deaggregateRecords(resp.Records)
+				records, err = deaggregator.DeaggregateRecords(resp.Records)
 				if err != nil {
 					return err
 				}
@@ -241,6 +242,7 @@ func (c *Consumer) ScanShard(ctx context.Context, shardID string, fn ScanFunc) e
 }
 
 // temporary conversion func of []types.Record -> DeaggregateRecords([]*types.Record) -> []types.Record
+/*
 func deaggregateRecords(in []types.Record) ([]types.Record, error) {
 	var recs []*types.Record
 	for _, rec := range in {
@@ -257,7 +259,7 @@ func deaggregateRecords(in []types.Record) ([]types.Record, error) {
 		out = append(out, *rec)
 	}
 	return out, nil
-}
+}*/
 
 func (c *Consumer) getShardIterator(ctx context.Context, streamName, shardID, seqNum string) (*string, error) {
 	params := &kinesis.GetShardIteratorInput{
