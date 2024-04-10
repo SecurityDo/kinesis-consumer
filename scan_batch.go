@@ -115,19 +115,23 @@ func (c *Consumer) ScanShardBatch(ctx context.Context, shardID string, fn ScanBa
 			} else {
 				records = resp.Records
 			}
-			for _, record := range records {
-				c.counter.Add("records", 1)
-				lastSeqNum = *record.SequenceNumber
-			}
 
-			err := fn(&BatchRecord{records, shardID, resp.MillisBehindLatest})
-			if err != nil && err != ErrSkipCheckpoint {
-				return err
-			}
+			if len(records) > 0 {
 
-			if err != ErrSkipCheckpoint {
-				if err := c.group.SetCheckpoint(c.streamName, shardID, lastSeqNum); err != nil {
+				for _, record := range records {
+					c.counter.Add("records", 1)
+					lastSeqNum = *record.SequenceNumber
+				}
+
+				err := fn(&BatchRecord{records, shardID, resp.MillisBehindLatest})
+				if err != nil && err != ErrSkipCheckpoint {
 					return err
+				}
+
+				if err != ErrSkipCheckpoint {
+					if err := c.group.SetCheckpoint(c.streamName, shardID, lastSeqNum); err != nil {
+						return err
+					}
 				}
 			}
 
