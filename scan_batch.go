@@ -21,7 +21,7 @@ type BatchRecord struct {
 // add an additional type for scanning multiple records at once
 type ScanBatchFunc func(*BatchRecord) error
 
-func (c *Consumer) ScanBatch(ctx context.Context, fn ScanBatchFunc) error {
+func (c *Consumer) ScanBatch(ctx context.Context, fn ScanBatchFunc, ec chan<- error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -59,7 +59,8 @@ func (c *Consumer) ScanBatch(ctx context.Context, fn ScanBatchFunc) error {
 		close(errc)
 	}()
 
-	return <-errc
+	err := <-errc
+	ec <- err
 }
 
 func (c *Consumer) ScanShardBatch(ctx context.Context, shardID string, fn ScanBatchFunc) error {

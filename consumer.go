@@ -173,6 +173,9 @@ func (c *Consumer) ScanShard(ctx context.Context, shardID string, fn ScanFunc) e
 
 			if !isRetriableError(err) {
 				return fmt.Errorf("get records error: %v", err.Error())
+			} else {
+				c.logger.Log("[CONSUMER] throttle:", err.Error())
+				time.Sleep(1 * time.Second)
 			}
 
 			shardIterator, err = c.getShardIterator(ctx, c.streamName, shardID, lastSeqNum)
